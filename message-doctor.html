@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Message Doctor • MEDUCO</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="patient-dashboard.html" class="brand">MEDUCO</a>
+        <nav class="nav" id="nav">
+          <a href="patient-dashboard.html">← Back to Dashboard</a>
+          <a href="login.html">Logout</a>
+        </nav>
+        <button aria-label="Toggle menu" class="nav-toggle" id="navToggle">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <div class="container" style="max-width: 800px">
+          <h1>Message Your Doctor</h1>
+          <p class="muted">Send secure messages to your healthcare providers.</p>
+          
+          <div class="grid-2">
+            <!-- New Message -->
+            <div class="card">
+              <h3 style="margin-top:0">Send New Message</h3>
+              <form class="form" id="messageForm">
+                <select class="input" name="recipient" required>
+                  <option value="">Select Doctor</option>
+                  <option value="dr-smith">Dr. Smith - Cardiology</option>
+                  <option value="dr-lee">Dr. Lee - Endocrinology</option>
+                  <option value="dr-johnson">Dr. Johnson - Primary Care</option>
+                </select>
+                <input class="input" name="subject" placeholder="Subject" required>
+                <textarea class="input" name="message" rows="6" placeholder="Type your message here..." required></textarea>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                  <input type="checkbox" name="urgent" id="urgent">
+                  <label for="urgent">Mark as urgent</label>
+                </div>
+                <button class="btn btn-primary" type="submit">Send Message</button>
+                <div class="form-note" id="formNote" role="status" aria-live="polite"></div>
+              </form>
+            </div>
+
+            <!-- Recent Messages -->
+            <div class="card">
+              <h3 style="margin-top:0">Recent Conversations</h3>
+              <div style="display: grid; gap: 12px;">
+                <div style="padding: 12px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #0ea5e9;">
+                  <div style="font-weight: 600;">Dr. Smith</div>
+                                  <div style="color: var(--text-secondary); font-size: 14px;">Blood pressure concerns</div>
+                <div style="color: var(--text-secondary); font-size: 12px;">2 hours ago</div>
+                </div>
+                <div style="padding: 12px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #10b981;">
+                  <div style="font-weight: 600;">Dr. Lee</div>
+                                  <div style="color: var(--text-secondary); font-size: 14px;">Medication adjustment needed</div>
+                <div style="color: var(--text-secondary); font-size: 12px;">1 day ago</div>
+                </div>
+                <div style="padding: 12px; background: #f8fafc; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                  <div style="font-weight: 600;">Dr. Johnson</div>
+                                  <div style="color: var(--text-secondary); font-size: 14px;">Lab results discussion</div>
+                <div style="color: var(--text-secondary); font-size: 12px;">3 days ago</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message History -->
+          <div class="card" style="margin-top: 24px;">
+            <h3 style="margin-top:0">Message History</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Doctor</th>
+                    <th>Subject</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Today, 2:30 PM</td>
+                    <td>Dr. Smith</td>
+                    <td>Blood pressure concerns</td>
+                    <td><span class="badge" style="background: #fef3c7; color: #92400e;">Pending</span></td>
+                  </tr>
+                  <tr>
+                    <td>Yesterday, 10:15 AM</td>
+                    <td>Dr. Lee</td>
+                    <td>Medication adjustment needed</td>
+                    <td><span class="badge" style="background: #dcfce7; color: #166534;">Replied</span></td>
+                  </tr>
+                  <tr>
+                    <td>Aug 25, 2025</td>
+                    <td>Dr. Johnson</td>
+                    <td>Lab results discussion</td>
+                    <td><span class="badge" style="background: #dcfce7; color: #166534;">Replied</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        © <span id="year"></span> MEDUCO
+      </div>
+    </footer>
+
+    <script src="api.js"></script>
+    <script src="script.js"></script>
+    <script>
+      // Load doctors and messages on page load
+      document.addEventListener('DOMContentLoaded', async function() {
+        await loadDoctors();
+        await loadMessages();
+      });
+
+      async function loadDoctors() {
+        try {
+          const doctors = await window.meducoAPI.getDoctors();
+          const select = document.querySelector('select[name="recipient"]');
+
+          // Clear existing options except the first
+          select.innerHTML = '<option value="">Select Doctor</option>';
+
+          doctors.forEach(doctor => {
+            const option = document.createElement('option');
+            option.value = doctor.id;
+            option.textContent = `Dr. ${doctor.last_name} - ${doctor.specialization || 'General'}`;
+            select.appendChild(option);
+          });
+        } catch (error) {
+          console.error('Failed to load doctors:', error);
+          const select = document.querySelector('select[name="recipient"]');
+          select.innerHTML = '<option value="">Failed to load doctors</option>';
+        }
+      }
+
+      async function loadMessages() {
+        try {
+          const response = await window.meducoAPI.getMessages('inbox', { limit: 10 });
+          const messages = response.data.messages || [];
+
+          // Update recent conversations
+          updateRecentConversations(messages);
+
+          // Update message history table
+          updateMessageHistory(messages);
+        } catch (error) {
+          console.error('Failed to load messages:', error);
+          // Show error in recent conversations
+          const conversationsDiv = document.querySelector('.card .grid-2 .card:nth-child(2) .grid');
+          conversationsDiv.innerHTML = '<div style="text-align: center; color: var(--text-secondary);">Failed to load conversations</div>';
+
+          // Show error in message history
+          const tbody = document.querySelector('.table-wrap table tbody');
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">Failed to load message history</td></tr>';
+        }
+      }
+
+      function updateRecentConversations(messages) {
+        const conversationsDiv = document.querySelector('.card .grid-2 .card:nth-child(2) .grid');
+
+        if (messages.length > 0) {
+          const recentMessages = messages.slice(0, 3); // Show only 3 most recent
+          conversationsDiv.innerHTML = recentMessages.map(message => {
+            const timeAgo = getTimeAgo(new Date(message.created_at));
+            const statusColor = message.status === 'unread' ? '#0ea5e9' : '#10b981';
+            return `
+              <div style="padding: 12px; background: #f8fafc; border-radius: 8px; border-left: 4px solid ${statusColor};">
+                <div style="font-weight: 600;">${message.sender_name || 'Doctor'}</div>
+                <div style="color: var(--text-secondary); font-size: 14px;">${message.subject}</div>
+                <div style="color: var(--text-secondary); font-size: 12px;">${timeAgo}</div>
+              </div>
+            `;
+          }).join('');
+        } else {
+          conversationsDiv.innerHTML = '<div style="text-align: center; color: var(--text-secondary);">No recent conversations</div>';
+        }
+      }
+
+      function updateMessageHistory(messages) {
+        const tbody = document.querySelector('.table-wrap table tbody');
+
+        if (messages.length > 0) {
+          tbody.innerHTML = messages.map(message => {
+            const date = new Date(message.created_at).toLocaleDateString();
+            const time = new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            const doctorName = message.sender_name || 'Doctor';
+            const subject = message.subject;
+            const status = message.status === 'unread' ? 'Pending' : 'Replied';
+            const statusClass = message.status === 'unread' ? 'badge-warning' : 'badge-success';
+
+            return `
+              <tr>
+                <td>${date}, ${time}</td>
+                <td>${doctorName}</td>
+                <td>${subject}</td>
+                <td><span class="badge" style="background: ${message.status === 'unread' ? '#fef3c7' : '#dcfce7'}; color: ${message.status === 'unread' ? '#92400e' : '#166534'};">${status}</span></td>
+              </tr>
+            `;
+          }).join('');
+        } else {
+          tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-secondary);">No messages found</td></tr>';
+        }
+      }
+
+      function getTimeAgo(date) {
+        const now = new Date();
+        const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+
+        if (diffInHours < 1) return 'Just now';
+        if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+
+        const diffInDays = Math.floor(diffInHours / 24);
+        return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+      }
+
+      // Handle message form submission
+      document.getElementById('messageForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        const messageData = {
+          recipient_id: formData.get('recipient'),
+          subject: formData.get('subject'),
+          content: formData.get('message'),
+          urgent: formData.get('urgent') === 'on'
+        };
+
+        try {
+          await window.meducoAPI.sendMessage(messageData);
+          document.getElementById('formNote').textContent = 'Message sent successfully!';
+          document.getElementById('formNote').style.color = 'green';
+          e.target.reset();
+          // Reload messages to show the new one
+          await loadMessages();
+        } catch (error) {
+          console.error('Failed to send message:', error);
+          document.getElementById('formNote').textContent = 'Failed to send message. Please try again.';
+          document.getElementById('formNote').style.color = 'red';
+        }
+      });
+    </script>
+  </body>
+</html>

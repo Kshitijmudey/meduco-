@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Care Plans • MEDUCO</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="index.html" class="brand">MEDUCO</a>
+        <nav class="nav" id="nav">
+
+          <a href="patients.html">Patients</a>
+          <a href="care-plans.html" aria-current="page">Care Plans</a>
+          <a href="appointments.html">Appointments</a>
+          <a href="records.html">Records</a>
+
+        </nav>
+        <button aria-label="Toggle menu" class="nav-toggle" id="navToggle">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <div class="container">
+          <div style="margin-bottom: 16px;">
+            <a href="doctor-dashboard.html" style="color: var(--brand); text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+              ← Back to Dashboard
+            </a>
+          </div>
+          <h1>Care Plans</h1>
+          <p class="muted">Create individualized, AI-suggested protocols for better outcomes.</p>
+          <div class="card">
+            <h3 style="margin-top: 0;">Search Patient for Care Plan</h3>
+            <div class="row">
+              <input class="input" id="patientIDInput" placeholder="Enter Patient ID (e.g., PAT123456)" />
+              <button class="btn btn-primary" onclick="searchPatientForCarePlan()">Search Patient</button>
+            </div>
+          </div>
+
+          <div class="card" id="patientInfo" style="margin-top: 24px; display: none;">
+            <h3 style="margin-top: 0;">Patient Information</h3>
+            <div class="grid-2">
+              <div class="mini-card">
+                <div class="mini-label">Patient Name</div>
+                <div class="mini-value" id="patientName">-</div>
+              </div>
+              <div class="mini-card">
+                <div class="mini-label">Patient ID</div>
+                <div class="mini-value" id="displayPatientID">-</div>
+              </div>
+              <div class="mini-card">
+                <div class="mini-label">Age</div>
+                <div class="mini-value" id="patientAge">-</div>
+              </div>
+              <div class="mini-card">
+                <div class="mini-label">Primary Condition</div>
+                <div class="mini-value" id="patientCondition">-</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" id="carePlanForm" style="margin-top: 24px; display: none;">
+            <h3 style="margin-top: 0;">Create Care Plan for <span id="carePlanPatientName"></span></h3>
+
+            <div class="form">
+              <div class="grid-2">
+                <div>
+                  <label style="display: block; margin-bottom: 8px; font-weight: 600;">Care Plan Type</label>
+                  <input class="input" id="carePlanType" placeholder="Enter Care Plan Type (e.g., Diabetes Management)" />
+                </div>
+                <div>
+                  <label style="display: block; margin-bottom: 8px; font-weight: 600;">Duration (Weeks)</label>
+                  <input class="input" type="number" id="carePlanDuration" placeholder="e.g., 12" min="1" max="52" />
+                </div>
+              </div>
+
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Primary Goals</label>
+                <textarea class="input" id="carePlanGoals" placeholder="Enter primary health goals for the patient..." rows="3"></textarea>
+              </div>
+
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Treatment Recommendations</label>
+                <textarea class="input" id="carePlanTreatments" placeholder="Enter treatment recommendations, medications, lifestyle changes..." rows="4"></textarea>
+              </div>
+
+              <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;">Monitoring Schedule</label>
+                <textarea class="input" id="carePlanMonitoring" placeholder="Enter monitoring frequency, follow-up appointments, lab tests..." rows="3"></textarea>
+              </div>
+
+              <div class="row" style="margin-top: 16px;">
+                <button class="btn btn-primary" onclick="createCarePlan()">Create Care Plan</button>
+                <button class="btn btn-outline" onclick="resetCarePlanForm()">Reset Form</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" id="existingCarePlans" style="margin-top: 24px; display: none;">
+            <h3 style="margin-top: 0;">Existing Care Plans</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date Created</th>
+                    <th>Type</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="carePlansTable">
+                  <!-- Existing care plans will be populated here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" id="noPatientFound" style="margin-top: 24px; display: none; text-align: center; padding: 32px;">
+            <h3 style="margin: 0 0 16px; color: var(--text-secondary);">Patient Not Found</h3>
+            <p class="muted">No patient found with the provided Patient ID. Please verify the ID and try again.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modals -->
+    <div id="viewModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('viewModal')">&times;</span>
+        <h2>View Care Plan</h2>
+        <div id="viewModalContent"></div>
+      </div>
+    </div>
+
+    <div id="editModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal('editModal')">&times;</span>
+        <h2>Edit Care Plan</h2>
+        <form id="editCarePlanForm">
+          <input type="hidden" id="editPlanId" />
+          <div>
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Title</label>
+            <input class="input" id="editTitle" />
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Description</label>
+            <textarea class="input" id="editDescription" rows="3"></textarea>
+          </div>
+          <div class="grid-2">
+            <div>
+              <label style="display: block; margin-bottom: 8px; font-weight: 600;">Start Date</label>
+              <input class="input" type="date" id="editStartDate" />
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 8px; font-weight: 600;">End Date</label>
+              <input class="input" type="date" id="editEndDate" />
+            </div>
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Goals</label>
+            <textarea class="input" id="editGoals" rows="3"></textarea>
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Instructions</label>
+            <textarea class="input" id="editInstructions" rows="4"></textarea>
+          </div>
+          <div>
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">Status</label>
+            <select class="input" id="editStatus">
+              <option value="active">Active</option>
+              <option value="completed">Completed</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div class="row" style="margin-top: 16px;">
+            <button type="button" class="btn btn-primary" onclick="updateCarePlan()">Update Care Plan</button>
+            <button type="button" class="btn btn-outline" onclick="closeModal('editModal')">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <div class="container">
+        © <span id="year"></span> MEDUCO
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+      // API Base URL
+      const API_BASE = 'http://localhost:3001/api/v1';
+
+      // Get auth token from localStorage (assuming user is logged in)
+      function getAuthToken() {
+        return localStorage.getItem('authToken');
+      }
+
+      // API helper functions
+      async function apiRequest(endpoint, options = {}) {
+        const url = `${API_BASE}${endpoint}`;
+        const token = getAuthToken();
+
+        const defaultOptions = {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` })
+          }
+        };
+
+        const response = await fetch(url, { ...defaultOptions, ...options });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'API request failed');
+        }
+
+        return data;
+      }
+
+      // Search patient for care plan
+      async function searchPatientForCarePlan() {
+        const patientID = document.getElementById('patientIDInput').value.trim().toUpperCase();
+        const patientInfoDiv = document.getElementById('patientInfo');
+        const carePlanFormDiv = document.getElementById('carePlanForm');
+        const existingCarePlansDiv = document.getElementById('existingCarePlans');
+        const noPatientFoundDiv = document.getElementById('noPatientFound');
+
+        if (!patientID) {
+          alert('Please enter a Patient ID');
+          return;
+        }
+
+        try {
+          // Get patient info from API
+          const patientResponse = await apiRequest(`/doctors/patients/${patientID}`);
+          const patient = patientResponse.data.patient;
+
+          // Get existing care plans for this patient
+          const carePlansResponse = await apiRequest(`/care-plans?patientId=${patient.id}`);
+          const carePlans = carePlansResponse.data.carePlans;
+
+          // Hide error message
+          noPatientFoundDiv.style.display = 'none';
+
+          // Show patient information
+          document.getElementById('patientName').textContent = `${patient.first_name} ${patient.last_name}`;
+          document.getElementById('displayPatientID').textContent = patient.patient_id || patientID;
+          document.getElementById('patientAge').textContent = patient.date_of_birth ?
+            new Date().getFullYear() - new Date(patient.date_of_birth).getFullYear() : 'N/A';
+          document.getElementById('patientCondition').textContent = patient.medical_history || 'General Care';
+          patientInfoDiv.style.display = 'block';
+
+          // Show care plan form
+          document.getElementById('carePlanPatientName').textContent = `${patient.first_name} ${patient.last_name}`;
+          carePlanFormDiv.style.display = 'block';
+
+          // Store patient ID for form submission
+          carePlanFormDiv.dataset.patientId = patient.id;
+
+          // Show existing care plans if any
+          if (carePlans && carePlans.length > 0) {
+            displayExistingCarePlans(carePlans);
+            existingCarePlansDiv.style.display = 'block';
+          } else {
+            existingCarePlansDiv.style.display = 'none';
+          }
+
+        } catch (error) {
+          console.error('Failed to search patient:', error);
+          // Show error message
+          patientInfoDiv.style.display = 'none';
+          carePlanFormDiv.style.display = 'none';
+          existingCarePlansDiv.style.display = 'none';
+          noPatientFoundDiv.style.display = 'block';
+        }
+      }
+
+      // Display existing care plans
+      function displayExistingCarePlans(carePlans) {
+        const carePlansTable = document.getElementById('carePlansTable');
+        carePlansTable.innerHTML = carePlans.map(plan => `
+          <tr>
+            <td>${new Date(plan.created_at).toLocaleDateString()}</td>
+            <td>${plan.title || 'Care Plan'}</td>
+            <td>${plan.end_date ? Math.ceil((new Date(plan.end_date) - new Date(plan.start_date)) / (1000 * 60 * 60 * 24 * 7)) + ' weeks' : 'Ongoing'}</td>
+            <td><span class="badge" style="background: ${plan.status === 'active' ? '#dcfce7' : '#fef3c7'}; color: ${plan.status === 'active' ? '#166534' : '#92400e'};">
+              ${plan.status || 'Active'}
+            </span></td>
+            <td>
+              <button class="btn btn-outline view-plan-btn" data-plan-id="${plan.id}" style="padding: 4px 8px; font-size: 12px;">View</button>
+              <button class="btn btn-outline edit-plan-btn" data-plan-id="${plan.id}" style="padding: 4px 8px; font-size: 12px; margin-left: 4px;">Edit</button>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+
+
+      // Create care plan
+      async function createCarePlan() {
+        const carePlanFormDiv = document.getElementById('carePlanForm');
+        const patientId = carePlanFormDiv.dataset.patientId;
+
+        const carePlanType = document.getElementById('carePlanType').value;
+        const duration = document.getElementById('carePlanDuration').value;
+        const goals = document.getElementById('carePlanGoals').value;
+        const treatments = document.getElementById('carePlanTreatments').value;
+        const monitoring = document.getElementById('carePlanMonitoring').value;
+
+        if (!carePlanType || !duration || !goals || !treatments || !monitoring) {
+          alert('Please fill in all fields');
+          return;
+        }
+
+        // Prepare care plan data
+        const carePlanData = {
+          patientId: patientId,
+          title: carePlanType,
+          description: `${carePlanType} care plan for ${duration} weeks`,
+          startDate: new Date().toISOString().split('T')[0],
+          endDate: new Date(Date.now() + duration * 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          goals: goals,
+          instructions: `Treatments: ${treatments}\n\nMonitoring: ${monitoring}`
+        };
+
+        try {
+          const response = await apiRequest('/care-plans', {
+            method: 'POST',
+            body: JSON.stringify(carePlanData)
+          });
+
+          if (response.success) {
+            alert('Care Plan created successfully! The plan has been saved for the patient.');
+            resetCarePlanForm();
+            // Refresh patient data to show new care plan
+            searchPatientForCarePlan();
+          }
+        } catch (error) {
+          console.error('Failed to create care plan:', error);
+          alert('Failed to create care plan: ' + error.message);
+        }
+      }
+
+      // Get care plan title from type
+      function getCarePlanTitle(type) {
+        const titles = {
+          'diabetes': 'Diabetes Management Plan',
+          'hypertension': 'Hypertension Control Plan',
+          'asthma': 'Asthma Management Plan',
+          'cardiac': 'Cardiac Rehabilitation Plan',
+          'general': 'General Wellness Plan',
+          'custom': 'Custom Care Plan'
+        };
+        return titles[type] || 'Care Plan';
+      }
+
+      // Reset care plan form
+      function resetCarePlanForm() {
+        document.getElementById('carePlanType').value = '';
+        document.getElementById('carePlanDuration').value = '';
+        document.getElementById('carePlanGoals').value = '';
+        document.getElementById('carePlanTreatments').value = '';
+        document.getElementById('carePlanMonitoring').value = '';
+      }
+
+      // Care plan templates (keeping for auto-fill functionality)
+      const carePlanTemplates = {
+        'diabetes': {
+          goals: '• Achieve HbA1c target of <7.0%\n• Maintain blood glucose levels between 80-130 mg/dL\n• Implement healthy diet and exercise routine\n• Monitor blood sugar regularly',
+          treatments: '• Continue Metformin 500mg twice daily\n• Dietary consultation with nutritionist\n• 30 minutes daily exercise (walking, swimming)\n• Blood glucose monitoring 4 times daily\n• Regular foot care and eye exams',
+          monitoring: '• Weekly blood glucose log review\n• Monthly HbA1c testing\n• Quarterly comprehensive metabolic panel\n• Annual eye and foot examination\n• Monthly weight and blood pressure monitoring'
+        },
+        'hypertension': {
+          goals: '• Achieve blood pressure target of <130/80 mmHg\n• Reduce sodium intake to <2,300mg daily\n• Implement stress management techniques\n• Regular physical activity',
+          treatments: '• Continue Lisinopril 10mg daily\n• Low-sodium diet (<2,300mg/day)\n• Regular aerobic exercise (150 min/week)\n• Stress reduction techniques (meditation, yoga)\n• Limit alcohol consumption',
+          monitoring: '• Daily blood pressure monitoring\n• Weekly medication adherence check\n• Monthly blood pressure review\n• Quarterly comprehensive metabolic panel\n• Annual kidney function assessment'
+        },
+        'asthma': {
+          goals: '• Achieve asthma control with minimal symptoms\n• Prevent asthma attacks and hospitalizations\n• Maintain normal lung function\n• Improve quality of life',
+          treatments: '• Continue Albuterol inhaler as needed\n• Fluticasone 250mcg twice daily\n• Peak flow monitoring twice daily\n• Avoid asthma triggers (dust, smoke, pets)\n• Regular breathing exercises',
+          monitoring: '• Daily peak flow measurements\n• Weekly symptom assessment\n• Monthly lung function testing\n• Quarterly asthma control review\n• Annual comprehensive pulmonary evaluation'
+        },
+        'cardiac': {
+          goals: '• Improve cardiovascular fitness\n• Reduce cardiac risk factors\n• Gradual return to normal activities\n• Prevent future cardiac events',
+          treatments: '• Supervised cardiac rehabilitation program\n• Gradual increase in physical activity\n• Heart-healthy diet (low-fat, low-sodium)\n• Stress management and smoking cessation\n• Medication adherence',
+          monitoring: '• Weekly cardiac rehabilitation sessions\n• Monthly cardiac function assessment\n• Quarterly lipid profile and blood pressure\n• Annual comprehensive cardiac evaluation\n• Regular weight and activity monitoring'
+        }
+      };
+
+      // Auto-fill template when care plan type is selected
+      document.getElementById('carePlanType').addEventListener('change', function() {
+        const selectedType = this.value;
+        if (selectedType && selectedType !== 'custom' && carePlanTemplates[selectedType]) {
+          const template = carePlanTemplates[selectedType];
+          document.getElementById('carePlanGoals').value = template.goals;
+          document.getElementById('carePlanTreatments').value = template.treatments;
+          document.getElementById('carePlanMonitoring').value = template.monitoring;
+        }
+      });
+
+      // Allow Enter key to trigger search
+      document.getElementById('patientIDInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          searchPatientForCarePlan();
+        }
+      });
+
+      // Event delegation for view and edit buttons
+      document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('view-plan-btn')) {
+          const planId = e.target.dataset.planId;
+          viewCarePlan(planId);
+        } else if (e.target.classList.contains('edit-plan-btn')) {
+          const planId = e.target.dataset.planId;
+          editCarePlan(planId);
+        }
+      });
+
+      // Open modal helper
+      function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+          modal.style.display = 'block';
+        }
+      }
+
+      // Close modal helper
+      function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+          modal.style.display = 'none';
+        }
+      }
+
+      // Update care plan
+      async function updateCarePlan() {
+        const planId = document.getElementById('editPlanId').value;
+        const title = document.getElementById('editTitle').value.trim();
+        const description = document.getElementById('editDescription').value.trim();
+        const startDate = document.getElementById('editStartDate').value;
+        const endDate = document.getElementById('editEndDate').value;
+        const goals = document.getElementById('editGoals').value.trim();
+        const instructions = document.getElementById('editInstructions').value.trim();
+        const status = document.getElementById('editStatus').value;
+
+        if (!title || !startDate || !goals || !instructions) {
+          alert('Please fill in all required fields (Title, Start Date, Goals, Instructions)');
+          return;
+        }
+
+        try {
+          const response = await apiRequest(`/care-plans/${planId}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+              title,
+              description,
+              startDate,
+              endDate,
+              goals,
+              instructions,
+              status
+            })
+          });
+
+          if (response.success) {
+            alert('Care plan updated successfully');
+            closeModal('editModal');
+            // Refresh patient data to show updated care plan
+            searchPatientForCarePlan();
+          } else {
+            alert('Failed to update care plan: ' + (response.message || 'Unknown error'));
+          }
+        } catch (error) {
+          alert('Failed to update care plan: ' + error.message);
+        }
+      }
+
+      // View care plan
+      async function viewCarePlan(planId) {
+        try {
+          const response = await apiRequest(`/care-plans/${planId}`);
+          const plan = response.data.carePlan;
+
+          const contentDiv = document.getElementById('viewModalContent');
+          contentDiv.innerHTML = `
+            <p><strong>Title:</strong> ${plan.title}</p>
+            <p><strong>Description:</strong> ${plan.description}</p>
+            <p><strong>Start Date:</strong> ${plan.start_date}</p>
+            <p><strong>End Date:</strong> ${plan.end_date || 'Ongoing'}</p>
+            <p><strong>Goals:</strong> ${plan.goals}</p>
+            <p><strong>Instructions:</strong> ${plan.instructions}</p>
+            <p><strong>Status:</strong> ${plan.status}</p>
+          `;
+
+          openModal('viewModal');
+        } catch (error) {
+          alert('Failed to load care plan details: ' + error.message);
+        }
+      }
+
+      // Edit care plan
+      async function editCarePlan(planId) {
+        try {
+          const response = await apiRequest(`/care-plans/${planId}`);
+          const plan = response.data.carePlan;
+
+          document.getElementById('editPlanId').value = plan.id;
+          document.getElementById('editTitle').value = plan.title || '';
+          document.getElementById('editDescription').value = plan.description || '';
+          document.getElementById('editStartDate').value = plan.start_date || '';
+          document.getElementById('editEndDate').value = plan.end_date || '';
+          document.getElementById('editGoals').value = plan.goals || '';
+          document.getElementById('editInstructions').value = plan.instructions || '';
+          document.getElementById('editStatus').value = plan.status || 'active';
+
+          openModal('editModal');
+        } catch (error) {
+          alert('Failed to load care plan for editing: ' + error.message);
+        }
+      }
+    </script>
+  </body>
+</html>

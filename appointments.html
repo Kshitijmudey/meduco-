@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Appointments • MEDUCO</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="index.html" class="brand">MEDUCO</a>
+        <nav class="nav" id="nav">
+
+          <a href="patients.html">Patients</a>
+          <a href="care-plans.html">Care Plans</a>
+          <a href="appointments.html" aria-current="page">Appointments</a>
+          <a href="records.html">Records</a>
+
+        </nav>
+        <button aria-label="Toggle menu" class="nav-toggle" id="navToggle">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <div class="container">
+          <div style="margin-bottom: 16px;">
+            <a href="doctor-dashboard.html" style="color: var(--brand); text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+              ← Back to Dashboard
+            </a>
+          </div>
+          <h1>Appointments</h1>
+          <p class="muted">Manage schedules, reminders, and follow‑ups.</p>
+          <div class="card row">
+            <button class="btn btn-primary" id="btnNewAppointment">New Appointment</button>
+            <button class="btn btn-outline" id="btnExportAppointments">Export</button>
+          </div>
+
+          <div class="card" style="margin-top: 24px;">
+            <h3 style="margin-top: 0;">Pending Appointments for Approval</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Patient Name</th>
+                    <th>Patient ID</th>
+                    <th>Type</th>
+                    <th>Reason</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="pendingAppointmentsTableBody">
+                  <!-- Pending appointments will be dynamically loaded here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 24px;">
+            <h3 style="margin-top: 0;">Today's Appointments - <span id="currentDate"></span></h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Patient Name</th>
+                    <th>Patient ID</th>
+                    <th>Appointment Type</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="appointmentsTableBody">
+                  <!-- Appointments will be dynamically loaded here -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- New Appointment Modal -->
+          <!-- Include new appointment modal from separate file -->
+          <div id="newAppointmentModalContainer"></div>
+
+          <!-- Export Appointment Modal -->
+          <!-- Include export appointment modal from separate file -->
+          <div id="exportAppointmentModalContainer"></div>
+
+          <!-- View Appointment Modal -->
+          <div id="viewAppointmentModal" class="modal" style="display:none;">
+            <div class="modal-content">
+              <span class="close" id="closeViewAppointmentModal">&times;</span>
+              <h2>Appointment Details</h2>
+              <div id="appointmentDetails"></div>
+              <div style="margin-top: 16px;">
+                <button id="btnApproveAppointment" class="btn btn-primary">Approve</button>
+                <button id="btnMarkDoneAppointment" class="btn btn-success">Mark as Done</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2" style="margin-top: 24px;">
+            <div class="card">
+              <h3 style="margin-top: 0;">Upcoming Appointments</h3>
+              <div class="mini-card">
+                <div class="mini-label">Tomorrow</div>
+                <div class="mini-value">3 appointments</div>
+              </div>
+              <div class="mini-card">
+                <div class="mini-label">This Week</div>
+                <div class="mini-value">12 appointments</div>
+              </div>
+              <div class="mini-card">
+                <div class="mini-label">Next Week</div>
+                <div class="mini-value">8 appointments</div>
+              </div>
+            </div>
+            <div class="card">
+              <h3 style="margin-top: 0;">Appointment Summary</h3>
+              <div class="mini-card">
+                <div class="mini-label">Total Today</div>
+                <div class="mini-value">5 appointments</div>
+              </div>
+              <div class="mini-card">
+                <div class="mini-label">Confirmed</div>
+                <div class="mini-value">4 appointments</div>
+              </div>
+              <div class="mini-card">
+                <div class="mini-label">Pending</div>
+                <div class="mini-value">1 appointment</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        © <span id="year"></span> MEDUCO
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="enhanced-appointments-script.js"></script>
+    <script>
+      // Display current date
+      function displayCurrentDate() {
+        const today = new Date();
+        const options = { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        };
+        const formattedDate = today.toLocaleDateString('en-US', options);
+        document.getElementById('currentDate').textContent = formattedDate;
+      }
+      
+      // Initialize when page loads
+      document.addEventListener('DOMContentLoaded', displayCurrentDate);
+    </script>
+  </body>
+</html> 
