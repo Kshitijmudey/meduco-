@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Video Consultation • MEDUCO</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="patient-dashboard.html" class="brand">MEDUCO</a>
+        <nav class="nav" id="nav">
+          <a href="patient-dashboard.html">← Back to Dashboard</a>
+          <a href="login.html">Logout</a>
+        </nav>
+        <button aria-label="Toggle menu" class="nav-toggle" id="navToggle">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <div class="container" style="max-width: 1200px">
+          <h1>Video Consultation</h1>
+          <p class="muted">Connect with your healthcare provider through secure video calls.</p>
+
+          <!-- Consultation Status -->
+          <div class="card" style="margin-bottom: 24px;" id="consultationStatus">
+            <div class="row">
+              <div style="flex: 1;">
+                <h3 style="margin: 0; color: var(--text);">Ready to Connect</h3>
+                <p style="margin: 0; color: var(--muted);">Your video consultation system is ready. Click "Start Consultation" when your appointment begins.</p>
+              </div>
+              <button class="btn btn-primary" id="startConsultationBtn" onclick="startConsultation()">Start Consultation</button>
+            </div>
+          </div>
+
+          <!-- Video Call Interface -->
+          <div class="grid-2" style="margin-bottom: 24px;" id="videoInterface" style="display: none;">
+            <div class="card">
+              <h3 style="margin-top: 0;">Doctor Video</h3>
+              <div class="video-container" style="background: #000; border-radius: 12px; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; position: relative;">
+                <video id="doctorVideo" style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover;" autoplay muted></video>
+                <div id="doctorVideoPlaceholder" style="color: white; text-align: center;">
+                  <div style="font-size: 48px; margin-bottom: 16px;">👨‍⚕️</div>
+                  <p>Waiting for doctor to join...</p>
+                </div>
+              </div>
+            </div>
+            <div class="card">
+              <h3 style="margin-top: 0;">Your Video</h3>
+              <div class="video-container" style="background: #000; border-radius: 12px; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; position: relative;">
+                <video id="patientVideo" style="width: 100%; height: 100%; border-radius: 12px; object-fit: cover;" autoplay muted></video>
+                <div id="patientVideoPlaceholder" style="color: white; text-align: center;">
+                  <div style="font-size: 48px; margin-bottom: 16px;">👤</div>
+                  <p>Camera not connected</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Call Controls -->
+          <div class="card" id="callControls" style="display: none; margin-bottom: 24px;">
+            <div class="row" style="justify-content: center;">
+              <button class="btn btn-outline" id="muteBtn" onclick="toggleMute()">
+                <span id="muteIcon">🎤</span> Mute
+              </button>
+              <button class="btn btn-outline" id="videoBtn" onclick="toggleVideo()">
+                <span id="videoIcon">📹</span> Video
+              </button>
+              <button class="btn btn-outline" onclick="shareScreen()">
+                <span>🖥️</span> Share Screen
+              </button>
+              <button class="btn btn-outline" onclick="openChat()">
+                <span>💬</span> Chat
+              </button>
+              <button class="btn" style="background: var(--danger); color: white;" onclick="endConsultation()">
+                <span>📞</span> End Call
+              </button>
+            </div>
+          </div>
+
+          <!-- Chat Panel -->
+          <div class="card" id="chatPanel" style="display: none; margin-bottom: 24px;">
+            <h3 style="margin-top: 0;">Chat</h3>
+            <div id="chatMessages" style="height: 200px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 16px; background: var(--surface);">
+              <!-- Chat messages will appear here -->
+            </div>
+            <div class="row">
+              <input class="input" id="chatInput" placeholder="Type a message..." style="flex: 1;">
+              <button class="btn btn-primary" onclick="sendChatMessage()">Send</button>
+            </div>
+          </div>
+
+          <!-- Upcoming Consultations -->
+          <div class="card" style="margin-bottom: 24px;">
+            <h3 style="margin-top: 0;">Upcoming Video Consultations</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date & Time</th>
+                    <th>Doctor</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Today, 2:00 PM</td>
+                    <td>Dr. Sarah Johnson</td>
+                    <td>Follow-up</td>
+                    <td><span class="badge" style="background: var(--success); color: white;">Confirmed</span></td>
+                    <td><button class="btn btn-outline" style="padding: 4px 8px; font-size: 12px;">Join Now</button></td>
+                  </tr>
+                  <tr>
+                    <td>Tomorrow, 10:30 AM</td>
+                    <td>Dr. Michael Chen</td>
+                    <td>Consultation</td>
+                    <td><span class="badge" style="background: var(--warning); color: white;">Pending</span></td>
+                    <td><button class="btn btn-outline" style="padding: 4px 8px; font-size: 12px;" disabled>Scheduled</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- System Requirements -->
+          <div class="card">
+            <h3 style="margin-top: 0;">System Requirements & Tips</h3>
+            <div class="grid-2">
+              <div>
+                <h4>Technical Requirements</h4>
+                <ul style="margin: 8px 0; padding-left: 20px; color: var(--text-secondary);">
+                  <li>Modern web browser (Chrome, Firefox, Safari, Edge)</li>
+                  <li>Stable internet connection (minimum 1 Mbps)</li>
+                  <li>Webcam and microphone</li>
+                  <li>Allow camera and microphone permissions</li>
+                </ul>
+              </div>
+              <div>
+                <h4>Best Practices</h4>
+                <ul style="margin: 8px 0; padding-left: 20px; color: var(--text-secondary);">
+                  <li>Find a quiet, well-lit location</li>
+                  <li>Test your camera and microphone beforehand</li>
+                  <li>Have your medical history and questions ready</li>
+                  <li>Ensure privacy during the consultation</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        © <span id="year"></span> MEDUCO
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="telemedicine.js"></script>
+  </body>
+</html>

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Medication Tracker • MEDUCO</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="patient-dashboard.html" class="brand">MEDUCO</a>
+        <nav class="nav" id="nav">
+          <a href="patient-dashboard.html">← Back to Dashboard</a>
+          <a href="login.html">Logout</a>
+        </nav>
+        <button aria-label="Toggle menu" class="nav-toggle" id="navToggle">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="section">
+        <div class="container" style="max-width: 1000px">
+          <h1>Medication Tracker</h1>
+          <p class="muted">Track your medications, set reminders, and monitor adherence.</p>
+
+          <!-- Quick Stats -->
+          <div class="grid-4" style="margin-bottom: 24px;">
+            <div class="overview-card">
+              <div class="overview-icon">💊</div>
+              <div class="overview-content">
+                <div class="overview-value" id="totalMeds">5</div>
+                <div class="overview-label">Active Medications</div>
+              </div>
+            </div>
+            <div class="overview-card">
+              <div class="overview-icon">✅</div>
+              <div class="overview-content">
+                <div class="overview-value" id="todayTaken">3</div>
+                <div class="overview-label">Taken Today</div>
+              </div>
+            </div>
+            <div class="overview-card">
+              <div class="overview-icon">⏰</div>
+              <div class="overview-content">
+                <div class="overview-value" id="upcomingDoses">2</div>
+                <div class="overview-label">Upcoming Doses</div>
+              </div>
+            </div>
+            <div class="overview-card">
+              <div class="overview-icon">📊</div>
+              <div class="overview-content">
+                <div class="overview-value" id="adherenceRate">92%</div>
+                <div class="overview-label">Adherence Rate</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Today's Schedule -->
+          <div class="card" style="margin-bottom: 24px;">
+            <h3 style="margin-top: 0;">Today's Medication Schedule</h3>
+            <div id="todaySchedule">
+              <!-- Will be populated by JavaScript -->
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <!-- Current Medications -->
+            <div class="card">
+              <h3 style="margin-top: 0;">Current Medications</h3>
+              <button class="btn btn-primary" onclick="openAddMedicationModal()" style="margin-bottom: 16px;">Add Medication</button>
+              <div id="medicationsList">
+                <!-- Will be populated by JavaScript -->
+              </div>
+            </div>
+
+            <!-- Medication History -->
+            <div class="card">
+              <h3 style="margin-top: 0;">Recent Activity</h3>
+              <div id="medicationHistory">
+                <!-- Will be populated by JavaScript -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Add Medication Modal -->
+          <div id="addMedicationModal" class="modal" style="display: none;">
+            <div class="modal-content">
+              <span class="close" onclick="closeAddMedicationModal()">&times;</span>
+              <h2>Add New Medication</h2>
+              <form id="addMedicationForm">
+                <div class="form">
+                  <input class="input" name="name" placeholder="Medication Name" required>
+                  <input class="input" name="dosage" placeholder="Dosage (e.g., 500mg)" required>
+                  <select class="input" name="frequency" required>
+                    <option value="">Select Frequency</option>
+                    <option value="once-daily">Once Daily</option>
+                    <option value="twice-daily">Twice Daily</option>
+                    <option value="three-times-daily">Three Times Daily</option>
+                    <option value="four-times-daily">Four Times Daily</option>
+                    <option value="as-needed">As Needed</option>
+                  </select>
+                  <input class="input" name="startDate" type="date" required>
+                  <input class="input" name="endDate" type="date" placeholder="End Date (optional)">
+                  <textarea class="input" name="instructions" rows="3" placeholder="Special instructions..."></textarea>
+                  <div class="row">
+                    <button type="submit" class="btn btn-primary">Add Medication</button>
+                    <button type="button" class="btn btn-outline" onclick="closeAddMedicationModal()">Cancel</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        © <span id="year"></span> MEDUCO
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="medication-tracker.js"></script>
+  </body>
+</html>
